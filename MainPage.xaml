@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="dCalculator.MainPage"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:local="clr-namespace:dCalculator"
+             xmlns:vm="clr-namespace:dCalculator.ViewModels"
+             Loaded="ContentPage_Loaded">
+  <ContentPage.BindingContext>
+    <vm:MainPageViewModel/>
+  </ContentPage.BindingContext>
+
+  <ContentPage.Resources>
+    <ControlTemplate x:Key="RadioButtonTemplate">
+      <Grid BindingContext="{Binding Source={RelativeSource Mode=TemplatedParent},Path=Value}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="10"/>
+          <ColumnDefinition Width="50"/>
+          <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <BoxView IsVisible="{Binding Source={RelativeSource Mode=TemplatedParent},Path=IsChecked}"
+                BackgroundColor="{AppThemeBinding Light={DynamicResource Radio_Checked_Light}, Dark={DynamicResource Radio_Checked_Dark}}"
+                Grid.ColumnSpan="3"/>
+        <BoxView IsVisible="{Binding Source={RelativeSource Mode=TemplatedParent},Path=IsChecked}"
+                 BackgroundColor="{DynamicResource Primary}" Margin="1,10"
+                 CornerRadius="2" WidthRequest="4" HorizontalOptions="Start"/>
+        <Label Grid.Column="1" Text="{Binding Name}" VerticalOptions="Center"/>
+        <Label Grid.Column="2" Text="{Binding Display}" VerticalOptions="Center"/>
+      </Grid>
+    </ControlTemplate>
+    <Style x:Key="RadixRadioStyle" TargetType="RadioButton">
+      <Setter Property="IsChecked" Value="False"/>
+      <Setter Property="ControlTemplate" Value="{StaticResource RadioButtonTemplate}"/>
+    </Style>
+  </ContentPage.Resources>
+
+  <Grid ColumnSpacing="2" RowSpacing="3">
+    <Grid.RowDefinitions>
+      <RowDefinition Height=".25*"/>
+      <RowDefinition Height=".25*"/>
+      <RowDefinition Height="auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <Label Padding="10,0" Text="{Binding ExpressionText, Mode=OneWay}" 
+           IsEnabled="False" FontSize="20" HorizontalTextAlignment="End" VerticalTextAlignment="Center"/>
+
+    <Label x:Name="resultLabel" Grid.Row="1" Padding="10,0"
+           Text="{Binding SelectedValue.Display, Mode=OneWay}" 
+           FontSize="40" HorizontalTextAlignment="End" VerticalTextAlignment="Center"/>
+
+    <Grid x:Name="radixGrid" Grid.Row="2" RadioButtonGroup.GroupName="radix" RadioButtonGroup.SelectedValue="{Binding SelectedValue,Mode=TwoWay}">
+      <Grid.RowDefinitions>
+        <RowDefinition/>
+        <RowDefinition/>
+        <RowDefinition/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <RadioButton Grid.Row="0" Value="{Binding Values[0]}" Style="{StaticResource RadixRadioStyle}" WidthRequest="{Binding Source={x:Reference radixGrid},Path=Width}"/>
+      <RadioButton x:Name="decimalRadio" 
+                   Grid.Row="1" Value="{Binding Values[1]}" Style="{StaticResource RadixRadioStyle}" WidthRequest="{Binding Source={x:Reference radixGrid},Path=Width}"/>
+      <RadioButton Grid.Row="2" Value="{Binding Values[2]}" Style="{StaticResource RadixRadioStyle}" WidthRequest="{Binding Source={x:Reference radixGrid},Path=Width}"/>
+      <RadioButton Grid.Row="3" Value="{Binding Values[3]}" Style="{StaticResource RadixRadioStyle}" WidthRequest="{Binding Source={x:Reference radixGrid},Path=Width}"/>
+    </Grid>
+
+    <Grid Grid.Row="3" Margin="3">
+      <Grid.Resources>
+        <Style TargetType="Button">
+          <Setter Property="MinimumHeightRequest" Value="35"/>
+          <Setter Property="MinimumWidthRequest" Value="60"/>
+          <Setter Property="CornerRadius" Value="4"/>
+          <Setter Property="BorderWidth" Value="1"/>
+          <Setter Property="FontSize" Value="20"/>
+          <Setter Property="Margin" Value="1"/>
+          <Setter Property="Command" Value="{Binding OperatorCommand}"/>
+          <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+              <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Disabled">
+                  <VisualState.Setters>
+                    <Setter Property="Opacity" Value=".4" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PointerOver" />
+              </VisualStateGroup>
+            </VisualStateGroupList>
+          </Setter>
+        </Style>
+      </Grid.Resources>
+      <Grid.RowDefinitions>
+        <RowDefinition/>
+        <RowDefinition/>
+        <RowDefinition/>
+        <RowDefinition/>
+        <RowDefinition/>
+        <RowDefinition/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+
+      <Button Grid.Row="0" Grid.Column="1" Text="&#xE016;&#xE016;" CommandParameter="&lt;&lt;" FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="0" Grid.Column="2" Text="&#xE017;&#xE017;" CommandParameter="&gt;&gt;" FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="0" Grid.Column="3" Text="&#x0421;" CommandParameter="Cl"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="0" Grid.Column="4" Text="&#xE94F;" CommandParameter="Del" FontFamily="SegoeFluentIcons"/>
+
+
+      <Button Grid.Row="1" Grid.Column="0" Text="A" CommandParameter="A" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX}"/>
+      <Button Grid.Row="1" Grid.Column="1" Text="~" CommandParameter="~"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="1" Grid.Column="2" Text="&amp;" CommandParameter="&amp;"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="1" Grid.Column="3" Text="|" CommandParameter="|"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="1" Grid.Column="4" Text="&#xE70E;" CommandParameter="^" FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+
+      <Button Grid.Row="2" Grid.Column="0" Text="B" CommandParameter="B" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX}"/>
+      <Button Grid.Row="2" Grid.Column="1" Text="(" CommandParameter="("
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="2" Grid.Column="2" Text=")" CommandParameter=")"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="2" Grid.Column="3" Text="&#xE94C;" CommandParameter="%" FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+      <Button Grid.Row="2" Grid.Column="4" Text="&#xE94A;" CommandParameter="/"  FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+
+      <Button Grid.Row="3" Grid.Column="0" Text="C" CommandParameter="C" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX}"/>
+      <Button Grid.Row="3" Grid.Column="1" Text="7" CommandParameter="7" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC|OCT}"/>
+      <Button Grid.Row="3" Grid.Column="2" Text="8" CommandParameter="8" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC}"/>
+      <Button Grid.Row="3" Grid.Column="3" Text="9" CommandParameter="9" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC}"/>
+      <Button Grid.Row="3" Grid.Column="4" Text="&#xE947;" CommandParameter="*" FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+
+      <Button Grid.Row="4" Grid.Column="0" Text="D" CommandParameter="D" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX}"/>
+      <Button Grid.Row="4" Grid.Column="1" Text="4" CommandParameter="4" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC|OCT}"/>
+      <Button Grid.Row="4" Grid.Column="2" Text="5" CommandParameter="5" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC|OCT}"/>
+      <Button Grid.Row="4" Grid.Column="3" Text="6" CommandParameter="6" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC|OCT}"/>
+      <Button Grid.Row="4" Grid.Column="4" Text="&#xE949;" CommandParameter="-" FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+
+      <Button Grid.Row="5" Grid.Column="0" Text="E" CommandParameter="E" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX}"/>
+      <Button Grid.Row="5" Grid.Column="1" Text="1" CommandParameter="1" />
+      <Button Grid.Row="5" Grid.Column="2" Text="2" CommandParameter="2" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC|OCT}"/>
+      <Button Grid.Row="5" Grid.Column="3" Text="3" CommandParameter="3"
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX|DEC|OCT}"/>
+      <Button Grid.Row="5" Grid.Column="4" Text="&#xE948;" CommandParameter="+" FontFamily="SegoeFluentIcons"
+              Background="{AppThemeBinding Light={DynamicResource Button_Background_Light2}, Dark={DynamicResource Button_Background_Dark2}}"/>
+
+      <Button Grid.Row="6" Grid.Column="0" Text="F" CommandParameter="F" 
+              IsEnabled="{Binding SelectedValue.Name,Converter={StaticResource StringEqBoolConverter},ConverterParameter=HEX}"/>
+      <Button Grid.Row="6" Grid.Column="1" Text="+/-" CommandParameter="+/-" />
+      <Button Grid.Row="6" Grid.Column="2" Text="0" CommandParameter="0" />
+      <Button Grid.Row="6" Grid.Column="4" Text="&#xE94E;" CommandParameter="=" FontFamily="SegoeFluentIcons"
+              BackgroundColor="{DynamicResource Primary}" TextColor="{DynamicResource PrimaryText}"/>
+    </Grid>
+
+  </Grid>
+</ContentPage>
