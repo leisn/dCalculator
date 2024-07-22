@@ -1,10 +1,14 @@
-﻿using Foundation;
+﻿// @Leisn (https://leisn.com , https://github.com/leisn)
 
-namespace dCalculator
+using Foundation;
+
+namespace dCalculator.Platforms.iOS;
+
+[Register("AppDelegate")]
+public class AppDelegate : MauiUIApplicationDelegate
 {
-    [Register("AppDelegate")]
-    public class AppDelegate : MauiUIApplicationDelegate
+    protected override MauiApp CreateMauiApp()
     {
-        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+        return MauiProgram.CreateMauiApp();
     }
 }

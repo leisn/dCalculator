@@ -1,18 +1,16 @@
-﻿using dCalculator.ViewModels;
+﻿// @Leisn (https://leisn.com , https://github.com/leisn)
 
-namespace dCalculator
+namespace dCalculator;
+
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    public MainPage()
     {
-        public MainPage()
-        {
-            InitializeComponent();
-        }
-
-        private void ContentPage_Loaded(object sender, EventArgs e)
-        {
-            decimalRadio.IsChecked = true;
-        }
+        InitializeComponent();
     }
 
+    private void ContentPage_Loaded(object sender, EventArgs e)
+    {
+        decimalRadio.IsChecked = true;
+    }
 }

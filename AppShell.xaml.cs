@@ -1,10 +1,11 @@
-﻿namespace dCalculator
+﻿// @Leisn (https://leisn.com , https://github.com/leisn)
+
+namespace dCalculator;
+
+public partial class AppShell : Shell
 {
-    public partial class AppShell : Shell
+    public AppShell()
     {
-        public AppShell()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

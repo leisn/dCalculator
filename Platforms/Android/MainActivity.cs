@@ -1,4 +1,6 @@
-﻿using Android.App;
+﻿// @Leisn (https://leisn.com , https://github.com/leisn)
+
+using Android.App;
 using Android.Content.PM;
 using Android.OS;
 

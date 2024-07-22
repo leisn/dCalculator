@@ -1,13 +1,6 @@
-﻿using System;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
+﻿// @Leisn (https://leisn.com , https://github.com/leisn)
+
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,181 +10,177 @@ using dCalculator.Bases;
 using dCalculator.Infrastructures;
 
 
-namespace dCalculator.ViewModels
+namespace dCalculator.ViewModels;
+
+public partial class MainPageViewModel : ObservableObject
 {
-    public partial class MainPageViewModel : ObservableObject
+    [ObservableProperty]
+    private long _currentValue;
+    [ObservableProperty]
+    private string _expressionText = "";
+    private RadixValue _selectedValue = null!;
+
+    public RadixValue SelectedValue { get => _selectedValue; set { if (SetProperty(ref _selectedValue, value)) UpdateExpression(); } }
+    public ObservableCollection<RadixValue> Values { get; }
+    public RelayCommand<string> OperatorCommand { get; }
+
+    private bool _numberChanged;
+
+    private readonly ExpressionHandler _expressionHandler = new();
+    public MainPageViewModel()
     {
-        [ObservableProperty]
-        private long _currentValue;
-        [ObservableProperty]
-        private string _expressionText = "";
-        private RadixValue _selectedValue = null!;
+        OperatorCommand = new RelayCommand<string>(OnOperatorClicked);
+        Values =
+        [
+            new RadixValue(16, "HEX",
+                           v => RadixValue.InsertString(Convert.ToString(v, 16).ToUpperInvariant(), 4, "  ")),
+            new RadixValue(10, "DEC",
+                          (v, s) => (v * 10) + int.Parse(s),
+                           v => v/10,
+                           v => RadixValue.InsertString(v.ToString(), 3, ", ")),
+            new RadixValue(8, "OCT",
+                           v => RadixValue.InsertString(Convert.ToString(v, 8), 3, "  ")),
+            new RadixValue(2, "BIN",
+                           v => RadixValue.InsertString(Convert.ToString(v, 2), 4, "  "))
+        ];
+    }
 
-        public RadixValue SelectedValue { get => _selectedValue; set { if (SetProperty(ref _selectedValue, value)) UpdateExpression(); } }
-        public ObservableCollection<RadixValue> Values { get; }
-        public RelayCommand<string> OperatorCommand { get; }
+    private void UpdateExpression()
+    {
+        if (SelectedValue == null)
+            return;
+        ExpressionText = _expressionHandler.ToDisplay(SelectedValue.Radix);
+    }
 
-        private bool _numberChanged;
-
-        private readonly ExpressionHandler _expressionHandler = new();
-        public MainPageViewModel()
+    private async void OnOperatorClicked(string? op)
+    {
+        try
         {
-            OperatorCommand = new RelayCommand<string>(OnOperatorClicked);
-            Values =
-            [
-                new RadixValue(16, "HEX",
-                               v => RadixValue.InsertString(Convert.ToString(v, 16).ToUpperInvariant(), 4, "  ")),
-                new RadixValue(10, "DEC",
-                              (v, s) => v * 10 + int.Parse(s),
-                               v => v/10,
-                               v => RadixValue.InsertString(v.ToString(), 3, ", ")),
-                new RadixValue(8, "OCT",
-                               v => RadixValue.InsertString(Convert.ToString(v, 8), 3, "  ")),
-                new RadixValue(2, "BIN",
-                               v => RadixValue.InsertString(Convert.ToString(v, 2), 4, "  "))
-            ];
-        }
+            ArgumentNullException.ThrowIfNull(op, nameof(op));
 
-        private void UpdateExpression()
-        {
-            if (SelectedValue == null)
-                return;
-            ExpressionText = _expressionHandler.ToDisplay(SelectedValue.Radix);
-        }
+            //if (Equals("~", op))
+            //{
+            //    UpdateValues(~SelectedValue.Value);
+            //    return;
+            //}
 
-        private async void OnOperatorClicked(string? op)
-        {
-            try
+            if (Equals("+/-", op))
             {
-                ArgumentNullException.ThrowIfNull(op, nameof(op));
-
-                //if (Equals("~", op))
-                //{
-                //    UpdateValues(~SelectedValue.Value);
-                //    return;
-                //}
-
-                if (Equals("+/-", op))
-                {
-                    SwitchSign();
-                    return;
-                }
-
-                if (Equals("Cl", op))
-                {
-                    ClearValues();
-                    return;
-                }
-
-                if (Equals("Del", op))
-                {
-                    DelClicked();
-                    return;
-                }
-
-                if (ExpressionHandler.IsNumber(op))
-                {
-                    NumberClicked(op);
-                    return;
-                }
-
-                if (ExpressionHandler.IsOperator(op))
-                {
-                    HandleOperator(op);
-                    return;
-                }
-
-                if (Equals("=", op))
-                {
-                    EndExpression();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                await Toast.Make($"Error: {ex}").Show();
-            }
-        }
-
-        private void NumberClicked(string number)
-        {
-            if (!_numberChanged && _expressionHandler.IsLastOperator)
-                UpdateValues(0);
-            UpdateValues(SelectedValue.AppendValue(number));
-            _numberChanged = true;
-        }
-
-        private void DelClicked()
-        {
-            if (SelectedValue.Value == 0)
-            {
-                _expressionHandler.RemoveLast();
-                UpdateExpression();
+                SwitchSign();
                 return;
             }
-            UpdateValues(SelectedValue.DelValue());
-            _numberChanged = true;
-        }
 
-        private void SwitchSign()
-        {
-            foreach (var item in Values)
-                item.SwitchSign();
-            _numberChanged = true;
-        }
-
-        private void ClearValues()
-        {
-            if (SelectedValue.Value == 0)
+            if (Equals("Cl", op))
             {
-                _expressionHandler.Clear();
-                UpdateExpression();
-                _numberChanged = false;
+                ClearValues();
+                return;
             }
-            else
-            {
-                UpdateValues(0);
-                _numberChanged = true;
-            }
-        }
 
-        private void UpdateValues(long value)
-        {
-            foreach (var item in Values)
-                item.SetValue(value);
-        }
-
-        private void HandleOperator(string op)
-        {
-            try
+            if (Equals("Del", op))
             {
-                if (!_numberChanged)
-                {
-                    if (_expressionHandler.IsLastConnector)
-                    {
-                        _expressionHandler.Append(op, SelectedValue.Value);
-                        return;
-                    }
-                }
-                _expressionHandler.Append(op, SelectedValue.Value);
-                _numberChanged = false;
+                DelClicked();
+                return;
             }
-            finally
+
+            if (ExpressionHandler.IsNumber(op))
             {
-                UpdateExpression();
+                NumberClicked(op);
+                return;
+            }
+
+            if (ExpressionHandler.IsOperator(op))
+            {
+                HandleOperator(op);
+                return;
+            }
+
+            if (Equals("=", op))
+            {
+                EndExpression();
+                return;
             }
         }
-
-
-        private void EndExpression()
+        catch (Exception ex)
         {
-            _expressionHandler.End(SelectedValue.Value);
+            await Toast.Make($"Error: {ex}").Show();
+        }
+    }
+
+    private void NumberClicked(string number)
+    {
+        if (!_numberChanged && _expressionHandler.IsLastOperator)
+            UpdateValues(0);
+        UpdateValues(SelectedValue.AppendValue(number));
+        _numberChanged = true;
+    }
+
+    private void DelClicked()
+    {
+        if (SelectedValue.Value == 0)
+        {
+            _expressionHandler.RemoveLast();
             UpdateExpression();
-            UpdateValues(_expressionHandler.GetResult());
+            return;
         }
+        UpdateValues(SelectedValue.DelValue());
+        _numberChanged = true;
+    }
 
+    private void SwitchSign()
+    {
+        foreach (var item in Values)
+            item.SwitchSign();
+        _numberChanged = true;
+    }
+
+    private void ClearValues()
+    {
+        if (SelectedValue.Value == 0)
+        {
+            _expressionHandler.Clear();
+            UpdateExpression();
+            _numberChanged = false;
+        }
+        else
+        {
+            UpdateValues(0);
+            _numberChanged = true;
+        }
+    }
+
+    private void UpdateValues(long value)
+    {
+        foreach (var item in Values)
+            item.SetValue(value);
+    }
+
+    private void HandleOperator(string op)
+    {
+        try
+        {
+            if (!_numberChanged)
+            {
+                if (_expressionHandler.IsLastConnector)
+                {
+                    _expressionHandler.Append(op, SelectedValue.Value);
+                    return;
+                }
+            }
+            _expressionHandler.Append(op, SelectedValue.Value);
+            _numberChanged = false;
+        }
+        finally
+        {
+            UpdateExpression();
+        }
     }
 
 
+    private void EndExpression()
+    {
+        _expressionHandler.End(SelectedValue.Value);
+        UpdateExpression();
+        UpdateValues(_expressionHandler.GetResult());
+    }
 
 }
