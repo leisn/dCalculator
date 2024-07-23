@@ -98,6 +98,10 @@ public partial class MainPageViewModel : ObservableObject
         {
             await Toast.Make($"Error: {ex}").Show();
         }
+        finally
+        {
+            HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+        }
     }
 
     private void NumberClicked(string number)
