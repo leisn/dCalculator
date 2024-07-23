@@ -35,7 +35,7 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-		<Company>leisn</Company>
+		<Company>leisn.com</Company>
 		<DefaultLanguage>zh-CN</DefaultLanguage>
 	</PropertyGroup>
 
@@ -43,6 +43,7 @@
 	  <ApplicationId>com.leisn.dcalculator</ApplicationId>
 	  <ApplicationTitle>dCalculator</ApplicationTitle>
 	  <AndroidStoreUncompressedFileExtensions>.ttf</AndroidStoreUncompressedFileExtensions>
+	  <EnableLLVM>True</EnableLLVM>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-maccatalyst|AnyCPU'">
@@ -60,6 +61,8 @@
 	  <ApplicationTitle>dCalculator</ApplicationTitle>
 	  <AndroidPackageFormat>apk</AndroidPackageFormat>
 	  <AndroidStoreUncompressedFileExtensions>.ttf</AndroidStoreUncompressedFileExtensions>
+	  <AndroidLinkTool>r8</AndroidLinkTool>
+	  <EnableLLVM>True</EnableLLVM>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-maccatalyst|AnyCPU'">
@@ -74,6 +77,7 @@
 
 	<PropertyGroup>
 	  <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+	  <Copyright>©leisn.com 2024</Copyright>
 	</PropertyGroup>
 
 	<ItemGroup>
