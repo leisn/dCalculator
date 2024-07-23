@@ -41,7 +41,7 @@ public partial class MainPageViewModel : ObservableObject
             new RadixValue(8, "OCT",
                            v => RadixValue.InsertString(Convert.ToString(v, 8), 3, "  ")),
             new RadixValue(2, "BIN",
-                           v => RadixValue.InsertString(Convert.ToString(v, 2), 4, "  "))
+                           v => RadixValue.InsertString(Convert.ToString(v, 2), 8, "  "))
         ];
     }
 
@@ -57,12 +57,6 @@ public partial class MainPageViewModel : ObservableObject
         try
         {
             ArgumentNullException.ThrowIfNull(op, nameof(op));
-
-            //if (Equals("~", op))
-            //{
-            //    UpdateValues(~SelectedValue.Value);
-            //    return;
-            //}
 
             if (Equals("+/-", op))
             {
@@ -160,7 +154,7 @@ public partial class MainPageViewModel : ObservableObject
         {
             if (!_numberChanged)
             {
-                if (_expressionHandler.IsLastConnector)
+                if (_expressionHandler.IsLastOperator)
                 {
                     _expressionHandler.Append(op, SelectedValue.Value);
                     return;
@@ -176,11 +170,20 @@ public partial class MainPageViewModel : ObservableObject
     }
 
 
-    private void EndExpression()
+    private async void EndExpression()
     {
-        _expressionHandler.End(SelectedValue.Value);
-        UpdateExpression();
-        UpdateValues(_expressionHandler.GetResult());
+        try
+        {
+            _expressionHandler.End(SelectedValue.Value);
+            UpdateExpression();
+            UpdateValues(_expressionHandler.GetResult());
+        }
+        catch (Exception ex)
+        {
+            await Toast.Make($"Error: \n{ex.Message}", CommunityToolkit.Maui.Core.ToastDuration.Long)
+                       .Show();
+        }
+        _numberChanged = true;
     }
 
 }

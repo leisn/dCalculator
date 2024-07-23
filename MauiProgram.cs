@@ -3,6 +3,8 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Markup;
 
+using Microsoft.Extensions.Logging;
+
 namespace dCalculator;
 
 public static class MauiProgram
