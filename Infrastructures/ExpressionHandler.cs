@@ -13,7 +13,7 @@ public class ExpressionHandler
     public const string Equal = "=";
     public static readonly string[] Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A", "B", "C", "D", "E", "F"];
     public static readonly string[] Operators = ["<<", ">>", "~", "&", "|", "^", "%", "+", "-", "*", "/", "(", ")"];
-    public static readonly string[] ConnectorOperators = ["%", "+", "-", "*", "/", "<<", ">>", "&", "|"];
+    public static readonly string[] ConnectorOperators = ["<<", ">>", "&", "|", "^", "%", "+", "-", "*", "/"];
     public static bool IsNumber(string? op)
     {
         return Numbers.Contains(op);
